@@ -1,3 +1,14 @@
+use uhk_input::input::InputManager;
+use uhk_input::events::InputEvent;
+
 fn main() {
-    println!("Hello, world!");
+    let manager = InputManager; 
+    let event = manager.dispatch();
+
+    match event {
+        InputEvent::KeyboardDownEvent(keycode) => {
+            println!("KeyDown: {}", keycode);
+        }
+        _ => {}
+    }
 }
