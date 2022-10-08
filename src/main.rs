@@ -1,14 +1,24 @@
-use uhk_input::input::InputManager;
+use uhk_input::input::{InputManager, IDispatcher};
 use uhk_input::events::InputEvent;
 
 fn main() {
-    let manager = InputManager; 
-    let event = manager.dispatch();
+    let mut manager = InputManager::new().unwrap(); 
 
-    match event {
-        InputEvent::KeyboardDownEvent(keycode) => {
-            println!("KeyDown: {}", keycode);
+    loop {
+        let event = manager.dispatch().unwrap();
+
+        match event {
+            Some(InputEvent::KeyboardDownEvent(keycode)) => {
+                println!("KeyDown: {}", keycode);
+            },
+            Some(InputEvent::KeyboardUpEvent(keycode)) => {
+                println!("KeyUp: {}", keycode);
+            },
+            Some(InputEvent::KeyboardHeldEvent(keycode)) => {
+                println!("KeyHeld: {}", keycode);
+            },
+            _ => {}
         }
-        _ => {}
     }
+    
 }

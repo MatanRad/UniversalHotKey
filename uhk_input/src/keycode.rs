@@ -1,1 +1,1 @@
-pub type KeyCode = u8;
+pub type KeyCode = u16;

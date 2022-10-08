@@ -9,3 +9,11 @@ edition = "2021"
 crate-type = ["dylib"]
 
 [dependencies]
+anyhow = "1.0.65"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+
+[target.'cfg(target_os = "windows")'.dependencies]
+
+[target.'cfg(target_os = "linux")'.dependencies]
+byteorder = "1.4.3"
