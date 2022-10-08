@@ -7,17 +7,26 @@ fn main() {
     loop {
         let event = manager.dispatch().unwrap();
 
-        match event {
-            Some(InputEvent::KeyboardDownEvent(keycode)) => {
-                println!("KeyDown: {}", keycode);
+        let (desc, keycode) = match event {
+            Some(InputEvent::KeyboardDownEvent(keycode)) => ("KeyDown", keycode),
+            Some(InputEvent::KeyboardUpEvent(keycode)) => ("KeyUp", keycode),
+            Some(InputEvent::KeyboardHeldEvent(keycode)) => ("KeyHeld", keycode),
+            _ => {
+                continue;
             }
-            Some(InputEvent::KeyboardUpEvent(keycode)) => {
-                println!("KeyUp: {}", keycode);
-            }
-            Some(InputEvent::KeyboardHeldEvent(keycode)) => {
-                println!("KeyHeld: {}", keycode);
-            }
-            _ => {}
+        };
+
+        if keycode.is_modifier() {
+            continue;
         }
+
+        let pressed = manager.modifiers().get_pressed();
+        let mut keys = String::new();
+
+        for m in pressed.iter() {
+            keys += format!("{:?} + ", m).as_str();
+        }
+
+        println!("{}: {}{}!", desc, keys, keycode);
     }
 }

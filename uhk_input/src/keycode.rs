@@ -2,7 +2,9 @@
 
 use num_derive::FromPrimitive;
 
-#[derive(FromPrimitive, Debug)]
+use crate::modifiers::Modifiers;
+
+#[derive(FromPrimitive, Debug, Clone, Copy)]
 pub enum KeyCode {
     RESERVED = 0,
     ESC = 1,
@@ -269,5 +271,11 @@ impl From<u16> for KeyCode {
 impl std::fmt::Display for KeyCode {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{:?}", self)
+    }
+}
+
+impl KeyCode {
+    pub fn is_modifier(&self) -> bool {
+        Modifiers::Unknown != self.into()
     }
 }

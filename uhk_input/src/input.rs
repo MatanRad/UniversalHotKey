@@ -1,4 +1,4 @@
-use crate::events::InputEvent;
+use crate::{events::InputEvent, modifiers::ModifiersState};
 use anyhow::Result;
 
 #[cfg_attr(
@@ -16,11 +16,22 @@ pub trait IDispatcher {
 
 pub struct InputManager {
     os_dispatcher: OsDispatcher,
+    modifier_states: ModifiersState,
 }
 
 impl IDispatcher for InputManager {
     fn dispatch(&mut self) -> Result<Option<InputEvent>> {
-        self.os_dispatcher.dispatch()
+        let ev = self.os_dispatcher.dispatch()?;
+
+        if let Some(i) = ev {
+            match i {
+                InputEvent::KeyboardUpEvent(code) => self.modifier_states.key_up(code),
+                InputEvent::KeyboardDownEvent(code) => self.modifier_states.key_down(code),
+                _ => {}
+            }
+        }
+
+        Ok(ev)
     }
 }
 
@@ -29,6 +40,11 @@ impl InputManager {
         let dispatcher = OsDispatcher::new()?;
         return Ok(Self {
             os_dispatcher: dispatcher,
+            modifier_states: ModifiersState::new(),
         });
+    }
+
+    pub fn modifiers(&self) -> &ModifiersState {
+        &self.modifier_states
     }
 }

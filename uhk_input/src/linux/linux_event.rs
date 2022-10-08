@@ -58,8 +58,8 @@ impl EventType {
 impl KeyEventValue {
     pub fn from_i32(value: i32) -> Result<KeyEventValue> {
         match value {
-            0x00 => Ok(KeyEventValue::DOWN),
-            0x01 => Ok(KeyEventValue::UP),
+            0x00 => Ok(KeyEventValue::UP),
+            0x01 => Ok(KeyEventValue::DOWN),
             0x02 => Ok(KeyEventValue::HELD),
             _ => return Err(anyhow::anyhow!("Invalid Key Code ({})!", value)),
         }
