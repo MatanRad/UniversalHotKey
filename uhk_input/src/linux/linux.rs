@@ -75,9 +75,9 @@ impl LinuxDispatcher {
         let event_code = linux_event::KeyEventValue::from_i32(event.value)?;
 
         let final_event = match event_code {
-            KeyEventValue::DOWN => InputEvent::KeyboardDownEvent(event.code),
-            KeyEventValue::UP => InputEvent::KeyboardUpEvent(event.code),
-            KeyEventValue::HELD => InputEvent::KeyboardHeldEvent(event.code),
+            KeyEventValue::DOWN => InputEvent::KeyboardDownEvent(event.code.into()),
+            KeyEventValue::UP => InputEvent::KeyboardUpEvent(event.code.into()),
+            KeyEventValue::HELD => InputEvent::KeyboardHeldEvent(event.code.into()),
         };
 
         Ok(Some(final_event))
