@@ -1,15 +1,14 @@
 use anyhow::Result;
 
-pub type EventTimestamp =  [u8; 16];
+pub type EventTimestamp = [u8; 16];
 pub type EventCode = u16;
 pub type EventValue = i32;
-
 
 #[derive(Debug, PartialEq)]
 pub enum KeyEventValue {
     DOWN = 0,
     UP = 1,
-    HELD = 2
+    HELD = 2,
 }
 
 #[derive(Debug, PartialEq)]
@@ -28,13 +27,12 @@ pub enum EventType {
     FFSTATUS = 0x17,
 }
 
-
 #[repr(C)]
 pub struct LinuxInputEvent {
     pub timeval: EventTimestamp,
     pub event_type: EventType,
     pub code: EventCode,
-    pub value: EventValue
+    pub value: EventValue,
 }
 
 impl EventType {
@@ -52,9 +50,7 @@ impl EventType {
             0x15 => Ok(EventType::FF),
             0x16 => Ok(EventType::PWR),
             0x17 => Ok(EventType::FFSTATUS),
-            _ => {
-                return Err(anyhow::anyhow!("Invalid Event Type!"))
-            }
+            _ => return Err(anyhow::anyhow!("Invalid Event Type!")),
         }
     }
 }
@@ -65,9 +61,7 @@ impl KeyEventValue {
             0x00 => Ok(KeyEventValue::DOWN),
             0x01 => Ok(KeyEventValue::UP),
             0x02 => Ok(KeyEventValue::HELD),
-            _ => {
-                return Err(anyhow::anyhow!("Invalid Key Code ({})!", value))
-            }
+            _ => return Err(anyhow::anyhow!("Invalid Key Code ({})!", value)),
         }
     }
 }

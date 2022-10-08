@@ -6,5 +6,5 @@ pub enum InputEvent {
     KeyboardHeldEvent(KeyCode),
     MouseDownEvent,
     MouseUpEvent,
-    MouseMovedEvent
+    MouseMovedEvent,
 }

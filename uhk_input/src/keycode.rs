@@ -269,8 +269,5 @@ impl From<u16> for KeyCode {
 impl std::fmt::Display for KeyCode {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{:?}", self)
-        // or, alternatively:
-        // fmt::Debug::fmt(self, f)
     }
 }
-
