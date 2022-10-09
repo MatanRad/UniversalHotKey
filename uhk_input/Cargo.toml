@@ -13,6 +13,7 @@ anyhow = "1.0.65"
 num = "0.4"
 num-derive = "0.3"
 num-traits = "0.2"
+phf = { version = "0.11.1", features = ["macros"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 
@@ -20,3 +21,4 @@ num-traits = "0.2"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 byteorder = "1.4.3"
+x11 = { version = "2.20.0", features = ["xlib", "xtest"] }

@@ -1,4 +1,5 @@
 mod linux_event;
+mod linux_typer;
 
 use anyhow::Result;
 
@@ -7,6 +8,7 @@ use crate::input::os::linux_event::KeyEventValue;
 use crate::input::IDispatcher;
 use byteorder::{LittleEndian, ReadBytesExt};
 use linux_event::LinuxInputEvent;
+use linux_typer::LinuxTyper;
 use std::fs;
 use std::io::Read; // 1.2.7
 
@@ -16,6 +18,7 @@ pub struct LinuxDispatcher {
 }
 
 pub type OsDispatcher = LinuxDispatcher;
+pub type OsTyper = LinuxTyper;
 
 impl IDispatcher for LinuxDispatcher {
     fn dispatch(&mut self) -> Result<Option<InputEvent>> {

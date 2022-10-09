@@ -16,8 +16,24 @@ pub enum Modifiers {
     Unknown,
 }
 
+#[derive(Clone)]
 pub struct ModifiersState {
     pub state: HashMap<Modifiers, bool>,
+}
+
+impl Modifiers {
+    pub fn to_keycode(&self) -> KeyCode {
+        match *self {
+            Self::LShift => KeyCode::LEFTSHIFT,
+            Self::RShift => KeyCode::RIGHTSHIFT,
+            Self::LCtrl => KeyCode::LEFTCTRL,
+            Self::RCtrl => KeyCode::RIGHTCTRL,
+            Self::LAlt => KeyCode::LEFTALT,
+            Self::RAlt => KeyCode::RIGHTALT,
+            Self::Winkey => KeyCode::LEFTMETA,
+            _ => KeyCode::UNKNOWN,
+        }
+    }
 }
 
 impl From<KeyCode> for Modifiers {
