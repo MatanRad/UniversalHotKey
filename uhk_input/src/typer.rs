@@ -87,7 +87,11 @@ impl InputTyper {
         Ok(())
     }
 
-    pub fn type_str(&self, text: &str, reset_modifiers: Option<&HashSet<Modifiers>>) -> Result<()> {
+    pub fn type_str(
+        &self,
+        text: &str,
+        current_modifiers: Option<&HashSet<Modifiers>>,
+    ) -> Result<()> {
         if let Some(curr_modifiers) = current_modifiers {
             self.set_modifiers(curr_modifiers, false, None)?;
         }
