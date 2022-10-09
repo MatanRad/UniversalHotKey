@@ -1,10 +1,15 @@
+use std::collections::HashSet;
 use uhk_input::events::InputEvent;
-use uhk_input::input::{IDispatcher, ITyper, InputManager};
+use uhk_input::input::{IDispatcher, InputManager};
 use uhk_input::keycode::KeyCode;
 use uhk_input::modifiers::Modifiers;
+use uhk_input::typer::InputTyper;
+
+const MEME: bool = false;
 
 fn main() {
     let mut manager = InputManager::new().unwrap();
+    let mut typer = InputTyper::new().unwrap();
 
     loop {
         let event = manager.dispatch().unwrap();
@@ -31,16 +36,32 @@ fn main() {
 
         println!("{}: {}{}!", desc, keys, keycode);
 
-        if keycode == KeyCode::H && desc == "KeyUp" {
-            manager
-                .os_typer
-                .type_single(&KeyCode::T, &vec![Modifiers::Winkey])
+        if desc != "KeyUp" {
+            continue;
+        }
+
+        if keycode == KeyCode::H && MEME {
+            typer
+                .type_key(
+                    &KeyCode::T,
+                    Some(&HashSet::from([Modifiers::Winkey])),
+                    Some(&pressed),
+                )
                 .unwrap();
 
             std::thread::sleep(std::time::Duration::from_millis(1500));
-            manager
-                .os_typer
-                .type_str("open \"https://www.youtube.com/watch?v=dQw4w9WgXcQ\"\n")
+            typer
+                .type_str(
+                    "open \"https://www.youtube.com/watch?v=dQw4w9WgXcQ\"\n",
+                    Some(&pressed),
+                )
+                .unwrap();
+        }
+
+        if keycode == KeyCode::M && pressed == HashSet::from([Modifiers::Winkey, Modifiers::LCtrl])
+        {
+            typer
+                .type_str("matan@radomski.co.il", Some(&pressed))
                 .unwrap();
         }
     }

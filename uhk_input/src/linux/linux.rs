@@ -4,8 +4,8 @@ mod linux_typer;
 use anyhow::Result;
 
 use crate::events::InputEvent;
-use crate::input::os::linux_event::KeyEventValue;
 use crate::input::IDispatcher;
+use crate::os::os_impl::linux_event::KeyEventValue;
 use byteorder::{LittleEndian, ReadBytesExt};
 use linux_event::LinuxInputEvent;
 use linux_typer::LinuxTyper;

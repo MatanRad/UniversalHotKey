@@ -1,9 +1,9 @@
 use std::ptr::{null, null_mut};
 
-use crate::input::ITyper;
-use crate::keycode::{KeyCode, CHAR_TO_KEYCODE};
+use crate::keycode::KeyCode;
 use crate::modifiers::Modifiers;
-use anyhow::Result;
+use crate::typer::ITyper;
+use anyhow::{Ok, Result};
 
 use std::thread::sleep;
 
@@ -28,7 +28,7 @@ impl LinuxTyper {
         }
     }
 
-    fn key_set(&self, keycode: &KeyCode, down: bool) {
+    fn internal_key_set(&self, keycode: &KeyCode, down: bool) {
         unsafe {
             let state = if down { 1 } else { 0 };
             x11::xtest::XTestFakeKeyEvent(self.disp, *keycode as u32 + 8, state, 0);
@@ -37,11 +37,11 @@ impl LinuxTyper {
         }
     }
 
-    fn key_down(&self, keycode: &KeyCode) {
+    fn internal_key_down(&self, keycode: &KeyCode) {
         self.key_set(keycode, true);
     }
 
-    fn key_up(&self, keycode: &KeyCode) {
+    fn internal_key_up(&self, keycode: &KeyCode) {
         self.key_set(keycode, false);
     }
 
@@ -72,50 +72,17 @@ impl Drop for LinuxTyper {
 }
 
 impl ITyper for LinuxTyper {
-    fn type_single(
-        &mut self,
-        keycode: &crate::keycode::KeyCode,
-        modifiers: &Vec<Modifiers>,
-    ) -> Result<()> {
+    fn key_set(&self, keycode: &KeyCode, down: bool) -> Result<()> {
         self.curr_window()?;
-
-        for m in modifiers {
-            self.key_down(&m.to_keycode());
-        }
-
-        self.key_down(keycode);
-        self.key_up(keycode);
-
-        for m in modifiers {
-            self.key_up(&m.to_keycode());
-        }
-
+        self.internal_key_set(keycode, down);
         Ok(())
     }
 
-    fn type_str(&mut self, text: &str) -> Result<()> {
-        for i in text.chars() {
-            if !CHAR_TO_KEYCODE.contains_key(&i) {
-                return Err(anyhow::anyhow!("Invalid char in typed string: '{}'!", i));
-            }
-        }
+    fn key_down(&self, keycode: &KeyCode) -> Result<()> {
+        self.key_set(keycode, true)
+    }
 
-        self.curr_window()?;
-
-        for i in text.chars() {
-            let (keycode, shift) = CHAR_TO_KEYCODE.get(&i).unwrap();
-            if *shift {
-                self.key_down(&KeyCode::LEFTSHIFT);
-            }
-
-            self.key_down(keycode);
-            self.key_up(keycode);
-
-            if *shift {
-                self.key_up(&KeyCode::LEFTSHIFT);
-            }
-        }
-
-        Ok(())
+    fn key_up(&self, keycode: &KeyCode) -> Result<()> {
+        self.key_set(keycode, false)
     }
 }

@@ -1,30 +1,14 @@
-use crate::keycode::KeyCode;
-use crate::modifiers::Modifiers;
 use crate::{events::InputEvent, modifiers::ModifiersState};
 use anyhow::Result;
 
-#[cfg_attr(
-    all(target_os = "linux", target_pointer_width = "64"),
-    path = "linux/linux.rs"
-)]
-#[cfg_attr(target_os = "windows", path = "windows/windows.rs")]
-#[cfg_attr(target_os = "macos", path = "macos/macos.rs")]
-mod os;
-use os::OsDispatcher;
-use os::OsTyper;
+use crate::os::OsDispatcher;
 
 pub trait IDispatcher {
     fn dispatch(&mut self) -> Result<Option<InputEvent>>;
 }
 
-pub trait ITyper {
-    fn type_str(&mut self, text: &str) -> Result<()>;
-    fn type_single(&mut self, keycode: &KeyCode, modifiers: &Vec<Modifiers>) -> Result<()>;
-}
-
 pub struct InputManager {
     os_dispatcher: OsDispatcher,
-    pub os_typer: OsTyper,
     modifier_states: ModifiersState,
 }
 
@@ -49,7 +33,6 @@ impl InputManager {
         let dispatcher = OsDispatcher::new()?;
         return Ok(Self {
             os_dispatcher: dispatcher,
-            os_typer: OsTyper::new()?,
             modifier_states: ModifiersState::new(),
         });
     }
