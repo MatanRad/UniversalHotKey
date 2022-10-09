@@ -1,4 +1,4 @@
-use std::{collections::HashMap, ops::Index};
+use std::{collections::HashMap, collections::HashSet, ops::Index};
 
 use crate::keycode::KeyCode;
 
@@ -84,12 +84,12 @@ impl ModifiersState {
             .or_insert(true);
     }
 
-    pub fn get_pressed(&self) -> Vec<Modifiers> {
-        let mut pressed = Vec::new();
+    pub fn get_pressed(&self) -> HashSet<Modifiers> {
+        let mut pressed = HashSet::new();
 
         for (k, v) in self.state.iter() {
             if *v {
-                pressed.push(k.clone());
+                pressed.insert(k.clone());
             }
         }
 
