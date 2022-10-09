@@ -5,7 +5,7 @@ use uhk_input::keycode::KeyCode;
 use uhk_input::modifiers::Modifiers;
 use uhk_input::typer::InputTyper;
 
-const MEME: bool = false;
+const MEME: bool = true;
 
 fn main() {
     let mut manager = InputManager::new().unwrap();
@@ -42,27 +42,21 @@ fn main() {
 
         if keycode == KeyCode::H && MEME {
             typer
-                .type_key(
-                    &KeyCode::T,
-                    Some(&HashSet::from([Modifiers::Winkey])),
-                    Some(&pressed),
-                )
+                .type_key(&KeyCode::T, Some(&HashSet::from([Modifiers::Winkey])), true)
                 .unwrap();
 
             std::thread::sleep(std::time::Duration::from_millis(1500));
             typer
                 .type_str(
                     "open \"https://www.youtube.com/watch?v=dQw4w9WgXcQ\"\n",
-                    Some(&pressed),
+                    true,
                 )
                 .unwrap();
         }
 
         if keycode == KeyCode::M && pressed == HashSet::from([Modifiers::Winkey, Modifiers::LCtrl])
         {
-            typer
-                .type_str("matan@radomski.co.il", Some(&pressed))
-                .unwrap();
+            typer.type_str("matan@radomski.co.il", true).unwrap();
         }
     }
 }

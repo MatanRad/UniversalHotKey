@@ -1,6 +1,6 @@
-use std::{collections::HashMap, collections::HashSet, ops::Index};
-
 use crate::keycode::KeyCode;
+use std::slice::Iter;
+use std::{collections::HashMap, collections::HashSet, ops::Index};
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub enum Modifiers {
@@ -33,6 +33,19 @@ impl Modifiers {
             Self::Winkey => KeyCode::LEFTMETA,
             _ => KeyCode::UNKNOWN,
         }
+    }
+
+    pub fn iter() -> Iter<'static, Modifiers> {
+        static ALL: [Modifiers; 7] = [
+            Modifiers::LShift,
+            Modifiers::RShift,
+            Modifiers::LCtrl,
+            Modifiers::RCtrl,
+            Modifiers::LAlt,
+            Modifiers::RAlt,
+            Modifiers::Winkey,
+        ];
+        ALL.iter()
     }
 }
 

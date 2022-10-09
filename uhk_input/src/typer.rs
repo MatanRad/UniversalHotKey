@@ -34,20 +34,9 @@ impl InputTyper {
         })
     }
 
-    fn set_modifiers(
-        &self,
-        modifiers: &HashSet<Modifiers>,
-        down: bool,
-        keep: Option<&HashSet<Modifiers>>,
-    ) -> Result<()> {
-        for m in modifiers.iter() {
-            if let Some(keep) = keep {
-                if keep.contains(m) {
-                    continue;
-                }
-            }
-
-            self.typer.key_set(&m.to_keycode(), down)?;
+    fn reset_modifiers(&self) -> Result<()> {
+        for m in Modifiers::iter() {
+            self.typer.key_set(&m.to_keycode(), false)?;
         }
 
         Ok(())
@@ -57,10 +46,10 @@ impl InputTyper {
         &self,
         keycode: &crate::keycode::KeyCode,
         modifiers: Option<&HashSet<Modifiers>>,
-        current_modifiers: Option<&HashSet<Modifiers>>,
+        reset_modifiers: bool,
     ) -> Result<()> {
-        if let Some(curr_modifiers) = current_modifiers {
-            self.set_modifiers(curr_modifiers, false, modifiers)?;
+        if reset_modifiers {
+            self.reset_modifiers()?;
         }
 
         if let Some(modifiers) = modifiers {
@@ -78,22 +67,12 @@ impl InputTyper {
             }
         }
 
-        if let Some(curr_modifiers) = current_modifiers {
-            self.set_modifiers(curr_modifiers, true, modifiers)?;
-        }
-
-        // TODO: add modifiers
-
         Ok(())
     }
 
-    pub fn type_str(
-        &self,
-        text: &str,
-        current_modifiers: Option<&HashSet<Modifiers>>,
-    ) -> Result<()> {
-        if let Some(curr_modifiers) = current_modifiers {
-            self.set_modifiers(curr_modifiers, false, None)?;
+    pub fn type_str(&self, text: &str, reset_modifiers: bool) -> Result<()> {
+        if reset_modifiers {
+            self.reset_modifiers()?;
         }
 
         for i in text.chars() {
@@ -114,10 +93,6 @@ impl InputTyper {
                 self.key_up(&KeyCode::LEFTSHIFT)?;
             }
         }
-
-        // if let Some(curr_modifiers) = current_modifiers {
-        //     self.set_modifiers(curr_modifiers, true, None)?;
-        // }
 
         Ok(())
     }
