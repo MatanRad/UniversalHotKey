@@ -1,5 +1,6 @@
 use crate::script::Script;
 
+#[derive(PartialEq)]
 pub enum ExecResult {
     SuccessNext,
     SuccessReturn,

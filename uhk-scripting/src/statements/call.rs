@@ -32,7 +32,13 @@ impl IStatement for CallStatement {
 
 impl IExecutable for CallStatement {
     fn exec(&self, script: &Script) -> ExecResult {
-        script.call_func(&self.calling_method)
+        let res = script.call_func(&self.calling_method);
+
+        if res == ExecResult::SuccessReturn {
+            return ExecResult::SuccessNext;
+        }
+
+        res
     }
 }
 
