@@ -42,9 +42,10 @@ some_statements_internal = _{
 }
 
 
-statement = _{ log_statement | call_statement }
+statement = _{ log_statement | call_statement | send_statement }
 
-log_statement = ${ "Log," ~ ws ~ string }
-call_statement = ${ "Call," ~ ws ~ func_name }
-return_statement = @{"Return" | "return"}
+log_statement = ${ "Log" ~ ws ~ string }
+call_statement = ${ "Call" ~ ws ~ func_name }
+return_statement = @{ "Return" | "return" }
+send_statement = @{ "Send" ~ ws ~ func_modifiers? ~ str_content }
 
