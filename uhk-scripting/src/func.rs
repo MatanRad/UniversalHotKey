@@ -70,7 +70,7 @@ impl IExecutable for Function {
                         ));
                     }
                     ExecResult::SuccessBreak => {
-                        // todo: is this needed? can be accomplished with jump
+                        // TODO: is this needed? can be accomplished with jump
                         panic!("SuccessBreak NOT IMPLEMENTED");
                     }
                     ExecResult::SuccessJump(_) => {
