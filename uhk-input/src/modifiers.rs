@@ -2,7 +2,7 @@ use crate::keycode::KeyCode;
 use std::slice::Iter;
 use std::{collections::HashMap, collections::HashSet, ops::Index};
 
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, PartialOrd, Ord)]
 pub enum Modifiers {
     LShift,
     RShift,

@@ -4,11 +4,12 @@ use crate::script::Script;
 use core::panic;
 use uhk_input::keycode::KeyCode;
 use uhk_input::modifiers::Modifiers;
+use uhk_input::utils::HashableHashSet;
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum CallingMethod {
     Manual(String),
-    Hotkey(Vec<KeyCode>, Vec<Modifiers>), // TODO: HashSet variant of my own (hashset doesn't have hash)
+    Hotkey(HashableHashSet<KeyCode>, HashableHashSet<Modifiers>),
 }
 
 pub trait IFunction

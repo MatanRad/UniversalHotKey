@@ -2,7 +2,7 @@ use num_derive::{FromPrimitive, ToPrimitive};
 
 use crate::modifiers::Modifiers;
 
-#[derive(FromPrimitive, ToPrimitive, Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(FromPrimitive, ToPrimitive, Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum KeyCode {
     RESERVED = 0,
     ESC = 1,
