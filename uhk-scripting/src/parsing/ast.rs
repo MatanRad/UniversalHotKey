@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::{collections::HashMap, vec};
 
 use crate::block::Block;
@@ -11,6 +12,7 @@ use pest::iterators::{Pair, Pairs};
 use pest::Parser;
 use uhk_input::keycode::KeyCode;
 use uhk_input::modifiers::Modifiers;
+use uhk_input::utils::HashableHashSet;
 
 use super::IParseable;
 
@@ -45,8 +47,8 @@ pub fn parse_statements(
     Ok(statements)
 }
 
-pub fn parse_func_hotkeys(pair: Pair<Rule>) -> Result<Vec<KeyCode>> {
-    let mut keys = vec![];
+pub fn parse_func_hotkeys(pair: Pair<Rule>) -> Result<HashableHashSet<KeyCode>> {
+    let mut keys = HashSet::new();
     if !matches!(pair.as_rule(), Rule::func_name) {
         return Err(anyhow::anyhow!(
             "[PARSE HOTKEYS] Tried building keycode list out of non-key rule {:?}",
@@ -59,17 +61,16 @@ pub fn parse_func_hotkeys(pair: Pair<Rule>) -> Result<Vec<KeyCode>> {
     for c in name.chars() {
         let keycode = KeyCode::from(c);
 
-        if keys.contains(&keycode) {
+        if !keys.insert(keycode) {
             return Err(anyhow::anyhow!("Key '{}' typed twice!", c));
         }
-        keys.push(keycode);
     }
 
-    Ok(keys)
+    Ok(HashableHashSet::new(keys))
 }
 
-pub fn parse_func_modifiers(pair: Pair<Rule>) -> Result<Vec<Modifiers>> {
-    let mut mods = vec![];
+pub fn parse_func_modifiers(pair: Pair<Rule>) -> Result<HashableHashSet<Modifiers>> {
+    let mut mods = HashSet::new();
     if !matches!(pair.as_rule(), Rule::func_modifiers) {
         return Err(anyhow::anyhow!(
             "[PARSE MODIFIERS] Tried building mods out of non-mods rule {:?}",
@@ -98,13 +99,12 @@ pub fn parse_func_modifiers(pair: Pair<Rule>) -> Result<Vec<Modifiers>> {
             _ => return Err(anyhow::anyhow!("Expected mod but found {:?}!", p.as_rule())),
         };
 
-        if mods.contains(&modifier) {
+        if !mods.insert(modifier) {
             return Err(anyhow::anyhow!("Mod {:?} typed twice!", p.as_rule()));
         }
-        mods.push(modifier);
     }
 
-    Ok(mods)
+    Ok(HashableHashSet::new(mods))
 }
 
 pub fn parse_hotkey(pair: Pair<Rule>) -> Result<CallingMethod> {
