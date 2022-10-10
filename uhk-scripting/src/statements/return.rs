@@ -1,5 +1,9 @@
+use crate::{parsing::Rule, script::Script};
+use pest::iterators::Pair;
+
 use crate::{
     execution::{ExecResult, IExecutable},
+    parsing::IParseable,
     statement::{IStatement, StatementCallInfo},
 };
 
@@ -21,8 +25,21 @@ impl IStatement for ReturnStatement {
 }
 
 impl IExecutable for ReturnStatement {
-    fn exec(&self) -> ExecResult {
+    fn exec(&self, _script: &Script) -> ExecResult {
         ExecResult::SuccessReturn
+    }
+}
+
+impl IParseable for ReturnStatement {
+    fn parse(info: StatementCallInfo, pair: Pair<Rule>) -> anyhow::Result<Box<Self>> {
+        if !matches!(pair.as_rule(), Rule::return_statement) {
+            return Err(anyhow::anyhow!(
+                "Expected rule 'return_statement' but found '{:?}'",
+                pair.as_rule()
+            ));
+        }
+
+        Ok(Box::new(ReturnStatement { info }))
     }
 }
 

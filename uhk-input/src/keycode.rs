@@ -266,6 +266,15 @@ impl From<u16> for KeyCode {
     }
 }
 
+impl From<char> for KeyCode {
+    fn from(n: char) -> Self {
+        let (code, _) = CHAR_TO_KEYCODE
+            .get(&n)
+            .unwrap_or(&(KeyCode::UNKNOWN, false));
+        code.clone()
+    }
+}
+
 impl std::fmt::Display for KeyCode {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{:?}", self)
@@ -278,7 +287,6 @@ impl KeyCode {
     }
 }
 
-// static char_to_keycode: HashMap<char, (KeyCode, bool)> = HashMap::from([
 pub static CHAR_TO_KEYCODE: phf::Map<char, (KeyCode, bool)> = phf::phf_map! {
     '\t' => (KeyCode::TAB, false),
     '\n' => (KeyCode::ENTER, false),

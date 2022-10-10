@@ -1,5 +1,6 @@
 use crate::block::Block;
 use crate::execution::{ExecResult, IExecutable};
+use crate::script::Script;
 use core::panic;
 use uhk_input::keycode::KeyCode;
 use uhk_input::modifiers::Modifiers;
@@ -34,12 +35,12 @@ impl IFunction for Function {
 }
 
 impl IExecutable for Function {
-    fn exec(&self) -> ExecResult {
+    fn exec(&self, script: &Script) -> ExecResult {
         let mut curr_block: usize = 0;
         loop {
             let block = &self.blocks()[curr_block];
             for s in block.statements().iter() {
-                let res = s.exec();
+                let res = s.exec(script);
 
                 match res {
                     ExecResult::SuccessNext => {}

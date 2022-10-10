@@ -21,7 +21,7 @@ impl IScript for Script {
     fn call_func(&self, call_method: &CallingMethod) -> ExecResult {
         for (method, func) in self.funcs.iter() {
             if method == call_method {
-                return func.exec();
+                return func.exec(self);
             }
         }
 

@@ -5,15 +5,14 @@ use uhk_input::keycode::KeyCode;
 use uhk_input::modifiers::Modifiers;
 use uhk_input::typer::InputTyper;
 use uhk_scripting::func::CallingMethod;
+use uhk_scripting::parsing::parse;
 
-const MEME: bool = true;
-
-mod test_script;
+// mod test_script;
 
 fn main() {
     let mut manager = InputManager::new().unwrap();
     let typer = InputTyper::new().unwrap();
-    let script = test_script::get_script();
+    // let script = test_script::get_script();
 
     loop {
         let event = manager.dispatch().unwrap();
@@ -44,7 +43,8 @@ fn main() {
             continue;
         }
 
-        if keycode == KeyCode::H && MEME {
+        if keycode == KeyCode::R && pressed == HashSet::from([Modifiers::Winkey, Modifiers::LCtrl])
+        {
             typer
                 .type_key(&KeyCode::T, Some(&HashSet::from([Modifiers::Winkey])), true)
                 .unwrap();
@@ -65,13 +65,25 @@ fn main() {
 
         if keycode == KeyCode::S && pressed == HashSet::from([Modifiers::Winkey, Modifiers::LCtrl])
         {
-            println!("Executing test script!");
-            let res = script.exec_func(&CallingMethod::Manual("test_func".to_string()));
+            let source = std::fs::read_to_string("script.uhk").unwrap();
 
-            match res {
-                Ok(_) => {}
+            println!("PARSING!");
+            let script = match parse(source.as_str()) {
                 Err(e) => {
-                    println!("[SCRIPT ERROR] {}", e);
+                    println!("PARSING ERROR: {}", e);
+                    continue;
+                }
+                Ok(s) => s,
+            };
+
+            println!("Executing!");
+            match script.exec_func(&CallingMethod::Manual("main".to_string())) {
+                Err(e) => {
+                    println!("RUNTIME ERROR: {}", e);
+                    continue;
+                }
+                Ok(_) => {
+                    println!("DONE");
                 }
             }
         }

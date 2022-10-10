@@ -9,6 +9,8 @@ crate-type = ["dylib"]
 [dependencies]
 uhk-input = { path = "../uhk-input" }
 anyhow = "1.0.65"
+pest = "2.4.0"
+pest_derive = "2.4.0"
 
 
 [target.'cfg(target_os = "macos")'.dependencies]
