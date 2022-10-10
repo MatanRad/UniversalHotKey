@@ -4,12 +4,16 @@ use uhk_input::input::{IDispatcher, InputManager};
 use uhk_input::keycode::KeyCode;
 use uhk_input::modifiers::Modifiers;
 use uhk_input::typer::InputTyper;
+use uhk_scripting::func::CallingMethod;
 
 const MEME: bool = true;
+
+mod test_script;
 
 fn main() {
     let mut manager = InputManager::new().unwrap();
     let typer = InputTyper::new().unwrap();
+    let script = test_script::get_script();
 
     loop {
         let event = manager.dispatch().unwrap();
@@ -57,6 +61,19 @@ fn main() {
         if keycode == KeyCode::M && pressed == HashSet::from([Modifiers::Winkey, Modifiers::LCtrl])
         {
             typer.type_str("matan@radomski.co.il", true).unwrap();
+        }
+
+        if keycode == KeyCode::S && pressed == HashSet::from([Modifiers::Winkey, Modifiers::LCtrl])
+        {
+            println!("Executing test script!");
+            let res = script.exec_func(&CallingMethod::Manual("test_func".to_string()));
+
+            match res {
+                Ok(_) => {}
+                Err(e) => {
+                    println!("[SCRIPT ERROR] {}", e);
+                }
+            }
         }
     }
 }

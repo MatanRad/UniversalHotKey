@@ -212,6 +212,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "uhk-scripting"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "uhk_input",
+]
+
+[[package]]
 name = "uhk_input"
 version = "0.1.0"
 dependencies = [
@@ -234,6 +242,7 @@ checksum = "dcc811dc4066ac62f84f11307873c4850cb653bfa9b1719cee2bd2204a4bc5dd"
 name = "universal-hot-key"
 version = "0.1.0"
 dependencies = [
+ "uhk-scripting",
  "uhk_input",
 ]
 
