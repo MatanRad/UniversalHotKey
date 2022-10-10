@@ -47,6 +47,21 @@ impl Modifiers {
         ];
         ALL.iter()
     }
+
+    pub fn switch_side(&self) -> Modifiers {
+        match *self {
+            Self::LShift => Self::RShift,
+            Self::LCtrl => Self::RCtrl,
+            Self::LAlt => Self::RAlt,
+            Self::RShift => Self::LShift,
+            Self::RCtrl => Self::LCtrl,
+            Self::RAlt => Self::LAlt,
+            Self::Winkey => Self::Winkey,
+            Self::Option => Self::Option,
+            Self::Command => Self::Command,
+            Self::Unknown => Self::Unknown,
+        }
+    }
 }
 
 impl From<KeyCode> for Modifiers {

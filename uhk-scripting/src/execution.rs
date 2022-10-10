@@ -1,3 +1,5 @@
+use crate::script::Script;
+
 pub enum ExecResult {
     SuccessNext,
     SuccessReturn,
@@ -9,5 +11,5 @@ pub enum ExecResult {
 }
 
 pub trait IExecutable {
-    fn exec(&self) -> ExecResult;
+    fn exec(&self, script: &Script) -> ExecResult;
 }

@@ -1,5 +1,9 @@
+use crate::{parsing::Rule, script::Script};
+use pest::iterators::Pair;
+
 use crate::{
     execution::{ExecResult, IExecutable},
+    parsing::IParseable,
     statement::{IStatement, StatementCallInfo},
 };
 
@@ -22,9 +26,41 @@ impl IStatement for LogStatement {
 }
 
 impl IExecutable for LogStatement {
-    fn exec(&self) -> ExecResult {
+    fn exec(&self, _script: &Script) -> ExecResult {
         println!("{}", self.text);
         ExecResult::SuccessNext
+    }
+}
+
+impl IParseable for LogStatement {
+    fn parse(info: StatementCallInfo, pair: Pair<Rule>) -> anyhow::Result<Box<Self>> {
+        if !matches!(pair.as_rule(), Rule::log_statement) {
+            return Err(anyhow::anyhow!(
+                "[log_statement] Expected rule 'log_statement' but found '{:?}'",
+                pair.as_rule()
+            ));
+        }
+
+        let string_pair = match pair.into_inner().next() {
+            None => {
+                return Err(anyhow::anyhow!(
+                    "[log_statement] couldn't find str_content!"
+                ))
+            }
+            Some(p) => p,
+        };
+
+        if !matches!(string_pair.as_rule(), Rule::str_content) {
+            return Err(anyhow::anyhow!(
+                "[log_statement] Expected rule 'str_content' but found '{:?}'",
+                string_pair.as_rule()
+            ));
+        }
+
+        Ok(Box::new(LogStatement {
+            info: info,
+            text: string_pair.as_str().to_string(),
+        }))
     }
 }
 

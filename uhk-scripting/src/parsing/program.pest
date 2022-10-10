@@ -1,0 +1,51 @@
+program = ${ SOI ~ total_ws* ~  (generic_func)* ~ EOI }
+
+char = @{ 'a'..'z' | 'A'..'Z' | '0'..'9' | "_" }
+newline = _{ ws? ~ "\n" ~ ws? }
+ws = _{ (" " | "\t")+ }
+total_ws = _{ ws | newline }
+
+str_content = @{((!"\"" ~ ANY) | ("\\\""))*}
+string = _{ "\"" ~ str_content ~ "\"" }
+
+
+mod_winkey = @{ "#" }
+mod_alt = @{ "!" }
+mod_ctrl = @{ "^" }
+mod_shift = @{ "+" }
+mod_concat = @{ "&" } // TODO: Not Supported yet.
+mod_altgr = @{ "<^>!" } // TODO: Not Supported yet.
+mod_wildcard = @{ "*" } // TODO: Not Supported yet.
+mod_block = @{ "~" } // TODO: Not Supported yet.
+mod_force_hook = @{ "$" } // TODO: Not Supported yet.
+mod_up = @{ " UP" } // TODO: Not Supported yet.
+
+
+func_modifiers = ${ 
+    (mod_winkey |
+    mod_alt |
+    mod_ctrl |
+    mod_shift)*
+}
+
+func_name = @{ char+ }
+func = ${ func_name ~ ws? ~ "{" ~ total_ws* ~ some_statements ~ total_ws* ~ "}" ~ total_ws* }
+
+// TODO: this really isn't a func_name but whatever
+hotkey = ${ func_modifiers ~ func_name ~ "::"  ~ newline ~ total_ws*  ~ some_statements ~  total_ws* }
+generic_func = _{ (func | hotkey) }
+
+some_statements = ${ some_statements_internal }
+some_statements_internal = _{
+    return_statement |
+    statement ~ newline* ~ return_statement |
+    statement ~ newline* ~ some_statements_internal
+}
+
+
+statement = _{ log_statement | return_statement | call_statement }
+
+log_statement = ${ "Log," ~ ws ~ string }
+call_statement = ${ "Call," ~ ws ~ func_name }
+return_statement = @{"Return" | "return"}
+
