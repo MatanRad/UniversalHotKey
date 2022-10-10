@@ -1,7 +1,6 @@
 use std::ptr::{null, null_mut};
 
 use crate::keycode::KeyCode;
-use crate::modifiers::Modifiers;
 use crate::typer::ITyper;
 use anyhow::{Ok, Result};
 
@@ -35,14 +34,6 @@ impl LinuxTyper {
             sleep(SLEEP_DURATION);
             xlib::XFlush(self.disp);
         }
-    }
-
-    fn internal_key_down(&self, keycode: &KeyCode) {
-        self.key_set(keycode, true);
-    }
-
-    fn internal_key_up(&self, keycode: &KeyCode) {
-        self.key_set(keycode, false);
     }
 
     fn curr_window(&self) -> Result<xlib::Window> {

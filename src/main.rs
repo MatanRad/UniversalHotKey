@@ -9,7 +9,7 @@ const MEME: bool = true;
 
 fn main() {
     let mut manager = InputManager::new().unwrap();
-    let mut typer = InputTyper::new().unwrap();
+    let typer = InputTyper::new().unwrap();
 
     loop {
         let event = manager.dispatch().unwrap();

@@ -1,4 +1,3 @@
-use crate::input::InputManager;
 use crate::keycode::{KeyCode, CHAR_TO_KEYCODE};
 use crate::modifiers::Modifiers;
 use crate::os::OsTyper;
