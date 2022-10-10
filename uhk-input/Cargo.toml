@@ -1,5 +1,5 @@
 [package]
-name = "uhk_input"
+name = "uhk-input"
 version = "0.1.0"
 edition = "2021"
 

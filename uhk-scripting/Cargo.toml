@@ -7,7 +7,7 @@ edition = "2021"
 crate-type = ["dylib"]
 
 [dependencies]
-uhk_input = { path = "../uhk_input" }
+uhk-input = { path = "../uhk-input" }
 anyhow = "1.0.65"
 
 

@@ -212,15 +212,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "uhk-scripting"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "uhk_input",
-]
-
-[[package]]
-name = "uhk_input"
+name = "uhk-input"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -233,6 +225,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "uhk-scripting"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "uhk-input",
+]
+
+[[package]]
 name = "unicode-ident"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -242,8 +242,8 @@ checksum = "dcc811dc4066ac62f84f11307873c4850cb653bfa9b1719cee2bd2204a4bc5dd"
 name = "universal-hot-key"
 version = "0.1.0"
 dependencies = [
+ "uhk-input",
  "uhk-scripting",
- "uhk_input",
 ]
 
 [[package]]
