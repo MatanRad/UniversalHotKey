@@ -35,15 +35,14 @@ func = ${ func_name ~ ws? ~ "{" ~ total_ws* ~ some_statements ~ total_ws* ~ "}" 
 hotkey = ${ func_modifiers ~ func_name ~ "::"  ~ newline ~ total_ws*  ~ some_statements ~  total_ws* }
 generic_func = _{ (func | hotkey) }
 
-some_statements = ${ some_statements_internal }
+some_statements = ${ some_statements_internal ~ newline* ~ return_statement }
 some_statements_internal = _{
-    return_statement |
-    statement ~ newline* ~ return_statement |
-    statement ~ newline* ~ some_statements_internal
+    statement ~ newline* ~ some_statements_internal |
+    statement ~ newline*
 }
 
 
-statement = _{ log_statement | return_statement | call_statement }
+statement = _{ log_statement | call_statement }
 
 log_statement = ${ "Log," ~ ws ~ string }
 call_statement = ${ "Call," ~ ws ~ func_name }
