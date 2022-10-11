@@ -35,6 +35,7 @@ pub fn parse_statements(
             Rule::call_statement => statements::CallStatement::parse(info, p)?,
             Rule::send_statement => statements::SendStatement::parse(info, p)?,
             Rule::send_raw_statement => statements::SendStatement::parse(info, p)?,
+            Rule::sleep_statement => statements::SleepStatement::parse(info, p)?,
             _ => {
                 return Err(anyhow::anyhow!(
                     "Invalid statement encountered '{:?}'!",
