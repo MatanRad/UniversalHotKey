@@ -23,4 +23,8 @@ impl<T: Hash + Eq + Clone + Ord> HashableHashSet<T> {
     pub fn new(hs: HashSet<T>) -> Self {
         HashableHashSet { hashset: hs }
     }
+
+    pub fn hashset(&self) -> &HashSet<T> {
+        &self.hashset
+    }
 }

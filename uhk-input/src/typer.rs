@@ -47,6 +47,15 @@ impl InputTyper {
         modifiers: Option<&HashSet<Modifiers>>,
         reset_modifiers: bool,
     ) -> Result<()> {
+        self.type_keys(&HashSet::from([*keycode]), modifiers, reset_modifiers)
+    }
+
+    pub fn type_keys(
+        &self,
+        keycodes: &HashSet<crate::keycode::KeyCode>,
+        modifiers: Option<&HashSet<Modifiers>>,
+        reset_modifiers: bool,
+    ) -> Result<()> {
         if reset_modifiers {
             self.reset_modifiers()?;
         }
@@ -57,8 +66,12 @@ impl InputTyper {
             }
         }
 
-        self.key_down(keycode)?;
-        self.key_up(keycode)?;
+        for i in keycodes.iter() {
+            self.key_down(i)?;
+        }
+        for i in keycodes.iter() {
+            self.key_up(i)?;
+        }
 
         if let Some(modifiers) = modifiers {
             for m in modifiers.iter() {

@@ -1,3 +1,6 @@
+use uhk_input::input::InputManager;
+use uhk_input::typer::InputTyper;
+
 use crate::execution::ExecResult;
 use crate::execution::IExecutable;
 use crate::func::CallingMethod;
@@ -7,10 +10,14 @@ use std::collections::HashMap;
 pub(crate) trait IScript {
     fn functions(&self) -> &HashMap<CallingMethod, Function>;
     fn call_func(&self, call_method: &CallingMethod) -> ExecResult;
+    fn manager(&self) -> &InputManager;
+    fn typer(&self) -> &InputTyper;
 }
 
 pub struct Script {
     funcs: HashMap<CallingMethod, Function>,
+    manager: InputManager,
+    typer: InputTyper,
 }
 
 impl IScript for Script {
@@ -28,11 +35,25 @@ impl IScript for Script {
         // TODO: which function?
         ExecResult::FailProgram("Function not found!".to_string())
     }
+
+    fn typer(&self) -> &InputTyper {
+        &self.typer
+    }
+
+    fn manager(&self) -> &InputManager {
+        &self.manager
+    }
 }
 
 impl Script {
-    pub fn new(funcs: HashMap<CallingMethod, Function>) -> Self {
-        Self { funcs: funcs }
+    pub fn new(funcs: HashMap<CallingMethod, Function>) -> anyhow::Result<Self> {
+        let manager = InputManager::new()?;
+        let typer = InputTyper::new()?;
+        Ok(Self {
+            funcs: funcs,
+            manager: manager,
+            typer: typer,
+        })
     }
 
     // TODO: JESUS better naming
