@@ -33,6 +33,8 @@ pub fn parse_statements(
             Rule::log_statement => statements::LogStatement::parse(info, p)?,
             Rule::return_statement => statements::ReturnStatement::parse(info, p)?,
             Rule::call_statement => statements::CallStatement::parse(info, p)?,
+            Rule::send_statement => statements::SendStatement::parse(info, p)?,
+            Rule::send_raw_statement => statements::SendStatement::parse(info, p)?,
             _ => {
                 return Err(anyhow::anyhow!(
                     "Invalid statement encountered '{:?}'!",
@@ -49,7 +51,9 @@ pub fn parse_statements(
 
 pub fn parse_func_hotkeys(pair: Pair<Rule>) -> Result<HashableHashSet<KeyCode>> {
     let mut keys = HashSet::new();
-    if !matches!(pair.as_rule(), Rule::func_name) {
+    if !matches!(pair.as_rule(), Rule::func_name)
+        && !matches!(pair.as_rule(), Rule::chars_singleline)
+    {
         return Err(anyhow::anyhow!(
             "[PARSE HOTKEYS] Tried building keycode list out of non-key rule {:?}",
             pair.as_rule()
@@ -71,10 +75,13 @@ pub fn parse_func_hotkeys(pair: Pair<Rule>) -> Result<HashableHashSet<KeyCode>> 
 
 pub fn parse_func_modifiers(pair: Pair<Rule>) -> Result<HashableHashSet<Modifiers>> {
     let mut mods = HashSet::new();
-    if !matches!(pair.as_rule(), Rule::func_modifiers) {
+    if !matches!(pair.as_rule(), Rule::func_modifiers)
+        && !matches!(pair.as_rule(), Rule::func_modifiers_required)
+    {
         return Err(anyhow::anyhow!(
-            "[PARSE MODIFIERS] Tried building mods out of non-mods rule {:?}",
-            pair.as_rule()
+            "[PARSE MODIFIERS] Tried building mods out of non-mods rule {:?} ({})",
+            pair.as_rule(),
+            pair
         ));
     }
 
@@ -243,5 +250,5 @@ pub fn parse(source: &str) -> Result<Script> {
         funcs.insert(func.calling_method().clone(), func);
     }
 
-    Ok(Script::new(funcs))
+    Ok(Script::new(funcs)?)
 }

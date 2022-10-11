@@ -6,6 +6,8 @@ ws = _{ (" " | "\t")+ }
 total_ws = _{ ws | newline }
 
 str_content = @{((!"\"" ~ ANY) | ("\\\""))*}
+chars_singleline = @{(!newline ~ ANY)*}
+
 string = _{ "\"" ~ str_content ~ "\"" }
 
 
@@ -20,6 +22,13 @@ mod_block = @{ "~" } // TODO: Not Supported yet.
 mod_force_hook = @{ "$" } // TODO: Not Supported yet.
 mod_up = @{ " UP" } // TODO: Not Supported yet.
 
+
+func_modifiers_required = ${ 
+    (mod_winkey |
+    mod_alt |
+    mod_ctrl |
+    mod_shift)+
+}
 
 func_modifiers = ${ 
     (mod_winkey |
@@ -42,10 +51,14 @@ some_statements_internal = _{
 }
 
 
-statement = _{ log_statement | call_statement | send_statement }
+statement = _{ log_statement | call_statement | send_statement | send_raw_statement }
 
 log_statement = ${ "Log" ~ ws ~ string }
 call_statement = ${ "Call" ~ ws ~ func_name }
 return_statement = @{ "Return" | "return" }
-send_statement = @{ "Send" ~ ws ~ func_modifiers? ~ str_content }
+
+
+send_statement_common = _{(ws ~ func_modifiers_required ~ chars_singleline) | (ws ~ chars_singleline)}
+send_statement = ${ "Send" ~  send_statement_common }
+send_raw_statement = ${ "SendRaw" ~  send_statement_common }
 
