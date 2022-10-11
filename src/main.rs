@@ -1,91 +1,112 @@
 use std::collections::HashSet;
+
+use anyhow::Result;
+use config::UHKConfig;
 use uhk_input::events::InputEvent;
-use uhk_input::input::{IDispatcher, InputManager};
-use uhk_input::keycode::KeyCode;
+use uhk_input::input::IDispatcher;
 use uhk_input::modifiers::Modifiers;
-use uhk_input::typer::InputTyper;
-use uhk_scripting::func::CallingMethod;
 use uhk_scripting::parsing::parse;
+use uhk_scripting::script::Script;
 
 // mod test_script;
+mod config;
 
-fn main() {
-    let mut manager = InputManager::new().unwrap();
-    let typer = InputTyper::new().unwrap();
-    // let script = test_script::get_script();
+fn load_scripts(conf: &UHKConfig) -> Vec<Script> {
+    let mut scripts = vec![];
 
-    loop {
-        let event = manager.dispatch().unwrap();
-
-        let (desc, keycode) = match event {
-            Some(InputEvent::KeyboardDownEvent(keycode)) => ("KeyDown", keycode),
-            Some(InputEvent::KeyboardUpEvent(keycode)) => ("KeyUp", keycode),
-            Some(InputEvent::KeyboardHeldEvent(keycode)) => ("KeyHeld", keycode),
-            _ => {
+    for path in conf.scripts.iter() {
+        let source = match std::fs::read_to_string("script.uhk") {
+            Err(e) => {
+                eprintln!(
+                    "[SCRIPT LOADER] Couldn't find script ({}). Err: {}",
+                    path, e
+                );
                 continue;
             }
+            Ok(path) => path,
         };
 
-        if keycode.is_modifier() {
-            continue;
+        println!("[Script Loader] Parsing Script \"{}\"!", path);
+        match parse(source.as_str()) {
+            Err(e) => {
+                println!(
+                    "[Script Loader] Parsing Error: \"{}\" for script \"{}\"",
+                    e, path
+                );
+                continue;
+            }
+            Ok(s) => {
+                scripts.push(s);
+            }
+        };
+    }
+
+    println!("[Script Loader] Done!");
+    scripts
+}
+
+fn pretty_print_event(event: Option<InputEvent>, pressed: HashSet<Modifiers>) {
+    let (desc, keycode) = match event {
+        Some(InputEvent::KeyboardDownEvent(keycode)) => ("KeyDown", keycode),
+        Some(InputEvent::KeyboardUpEvent(keycode)) => ("KeyUp", keycode),
+        Some(InputEvent::KeyboardHeldEvent(keycode)) => ("KeyHeld", keycode),
+        _ => {
+            return;
         }
+    };
 
-        let pressed = manager.modifiers().get_pressed();
-        let mut keys = String::new();
+    if keycode.is_modifier() {
+        return;
+    }
 
-        for m in pressed.iter() {
-            keys += format!("{:?} + ", m).as_str();
-        }
+    let mut keys = String::new();
 
-        println!("{}: {}{}!", desc, keys, keycode);
+    for m in pressed.iter() {
+        keys += format!("{:?} + ", m).as_str();
+    }
 
-        if desc != "KeyUp" {
-            continue;
-        }
+    println!("{}: {}{}!", desc, keys, keycode);
+}
 
-        if keycode == KeyCode::R && pressed == HashSet::from([Modifiers::Winkey, Modifiers::LCtrl])
-        {
-            typer
-                .type_key(&KeyCode::T, Some(&HashSet::from([Modifiers::Winkey])), true)
-                .unwrap();
+fn inner_main() -> Result<()> {
+    // parse the config
+    let config = match UHKConfig::default() {
+        Err(e) => return Err(anyhow::anyhow!("[Main] Error Loading Config: {}", e)),
+        Ok(conf) => conf,
+    };
 
-            std::thread::sleep(std::time::Duration::from_millis(1500));
-            typer
-                .type_str(
-                    "open \"https://www.youtube.com/watch?v=dQw4w9WgXcQ\"\n",
-                    true,
-                )
-                .unwrap();
-        }
+    let mut scripts = load_scripts(&config);
 
-        if keycode == KeyCode::M && pressed == HashSet::from([Modifiers::Winkey, Modifiers::LCtrl])
-        {
-            typer.type_str("matan@radomski.co.il", true).unwrap();
-        }
+    if scripts.len() == 0 {
+        return Err(anyhow::anyhow!(
+            "No Scripts Loaded! Check stderr for errors! Exiting!"
+        ));
+    }
 
-        if keycode == KeyCode::S && pressed == HashSet::from([Modifiers::Winkey, Modifiers::LCtrl])
-        {
-            let source = std::fs::read_to_string("script.uhk").unwrap();
-
-            println!("PARSING!");
-            let script = match parse(source.as_str()) {
-                Err(e) => {
-                    println!("PARSING ERROR: {}", e);
+    loop {
+        // TODO: Allow scripts to exit?
+        for script in scripts.iter_mut() {
+            let event_res = script.dispatch();
+            let event_opt = match event_res {
+                Ok(opt) => opt,
+                Err(_) => {
+                    // Ret value is ignored, We don't care about any events that may have popped up.
+                    // Let the script handle it :)
                     continue;
                 }
-                Ok(s) => s,
             };
 
-            println!("Executing!");
-            match script.exec_func(&CallingMethod::Manual("main".to_string())) {
-                Err(e) => {
-                    println!("RUNTIME ERROR: {}", e);
-                    continue;
-                }
-                Ok(_) => {
-                    println!("DONE");
-                }
-            }
+            pretty_print_event(event_opt, script.get_pressed_modifiers());
         }
     }
+}
+
+fn main() {
+    match inner_main() {
+        Err(e) => {
+            eprintln!("[Main] Exiting - Error: \n\t{}", e);
+            std::process::exit(1);
+        }
+        Ok(_) => std::process::exit(0),
+    };
 }
