@@ -48,11 +48,12 @@ impl IExecutable for Function {
                     ExecResult::SuccessReturn => {
                         return ExecResult::SuccessReturn;
                     }
-                    ExecResult::FailNext => {
+                    ExecResult::FailNext(reason) => {
                         // TODO: Support names here.
                         println!(
-                            "Failed executing statement ({})",
-                            s.call_info().context_level()
+                            "Failed executing statement: ({}) reason: ({})",
+                            s.call_info().context_level(),
+                            reason
                         )
                     }
                     ExecResult::FailCrash(reason) => {

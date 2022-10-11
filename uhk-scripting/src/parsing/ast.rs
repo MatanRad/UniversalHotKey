@@ -67,7 +67,11 @@ pub fn parse_func_hotkeys(pair: Pair<Rule>) -> Result<HashableHashSet<KeyCode>> 
         let keycode = KeyCode::from(c);
 
         if !keys.insert(keycode) {
-            return Err(anyhow::anyhow!("Key '{}' typed twice!", c));
+            return Err(anyhow::anyhow!(
+                "Key '{}' typed twice (keylist: {:?})!",
+                c,
+                keys
+            ));
         }
     }
 
@@ -152,6 +156,11 @@ pub fn parse_hotkey(pair: Pair<Rule>) -> Result<CallingMethod> {
     }
 
     let keys = parse_func_hotkeys(keys_pair)?;
+
+    // TODO: Currently we don't support more than one non-modifier key selected. Need to implement.
+    if keys.hashset().len() > 1 {
+        return Err(anyhow::anyhow!("[PARSE HOTKEY] Hotkeys with more than 1 non-modifier keys are not yet implemented! (keys: '{:?}').", keys.hashset()));
+    }
 
     Ok(CallingMethod::Hotkey(keys, mods))
 }
