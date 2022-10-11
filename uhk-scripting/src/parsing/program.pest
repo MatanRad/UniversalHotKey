@@ -10,6 +10,10 @@ chars_singleline = @{(!newline ~ ANY)*}
 
 string = _{ "\"" ~ str_content ~ "\"" }
 
+int_content = _{ ('0'..'9')+ }
+int = ${ int_content }
+
+
 
 mod_winkey = @{ "#" }
 mod_alt = @{ "!" }
@@ -51,14 +55,12 @@ some_statements_internal = _{
 }
 
 
-statement = _{ log_statement | call_statement | send_statement | send_raw_statement }
+statement = _{ log_statement | call_statement | send_statement | send_raw_statement | sleep_statement }
 
-log_statement = ${ "Log" ~ ws ~ string }
-call_statement = ${ "Call" ~ ws ~ func_name }
+// TODO: Send doesn't required "" around strings... Treats them as text. Why use it here?
+log_statement = ${ "Log" ~ ","? ~ ws ~ string }
+call_statement = ${ "Call" ~ ","? ~ ws ~ func_name }
 return_statement = @{ "Return" | "return" }
-
-
-send_statement_common = _{(ws ~ func_modifiers_required ~ chars_singleline) | (ws ~ chars_singleline)}
-send_statement = ${ "Send" ~  send_statement_common }
-send_raw_statement = ${ "SendRaw" ~  send_statement_common }
-
+send_statement = ${ "Send" ~ ","? ~  ((ws ~ func_modifiers_required ~ chars_singleline) | (ws ~ chars_singleline)) }
+send_raw_statement = ${ "SendRaw" ~ ","? ~  ws ~ chars_singleline }
+sleep_statement = ${ "Sleep" ~ ","? ~ ws ~ int }
