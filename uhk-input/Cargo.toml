@@ -16,6 +16,8 @@ num-traits = "0.2"
 phf = { version = "0.11.1", features = ["macros"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
+core-graphics = "0.22.3"
+core-foundation = "0.9.3"
 
 [target.'cfg(target_os = "windows")'.dependencies]
 

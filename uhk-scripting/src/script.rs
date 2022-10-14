@@ -1,7 +1,5 @@
 use uhk_input::events::InputEvent;
-use uhk_input::input::IDispatcher;
 use uhk_input::input::InputManager;
-use uhk_input::modifiers::Modifiers;
 use uhk_input::typer::InputTyper;
 
 use crate::execution::ExecResult;
@@ -9,7 +7,6 @@ use crate::execution::IExecutable;
 use crate::func::CallingMethod;
 use crate::func::Function;
 use std::collections::HashMap;
-use std::collections::HashSet;
 
 pub(crate) trait IScript {
     fn functions(&self) -> &HashMap<CallingMethod, Function>;
@@ -18,13 +15,12 @@ pub(crate) trait IScript {
     fn typer(&self) -> &InputTyper;
 }
 
-pub struct Script {
+pub struct Script<'a> {
     funcs: HashMap<CallingMethod, Function>,
-    manager: InputManager,
-    typer: InputTyper,
+    typer: &'a InputTyper,
 }
 
-impl IScript for Script {
+impl<'a> IScript for Script<'a> {
     fn functions(&self) -> &HashMap<CallingMethod, Function> {
         &self.funcs
     }
@@ -49,23 +45,35 @@ impl IScript for Script {
     }
 }
 
-impl IDispatcher for Script {
-    fn dispatch(&mut self) -> anyhow::Result<Option<InputEvent>> {
-        let event = match self.manager.dispatch()? {
+impl<'a> Script<'a> {
+    pub fn new(
+        funcs: HashMap<CallingMethod, Function>,
+        manager: &'a InputManager,
+        typer: &'a InputTyper,
+    ) -> Self {
+        Self {
+            funcs: funcs,
+            manager: manager,
+            typer: typer,
+        }
+    }
+
+    pub fn dispatch(&mut self, event: &Option<InputEvent>) -> anyhow::Result<()> {
+        let event = match event {
             None => {
-                return Ok(None);
+                return Ok(());
             }
-            Some(event) => event,
+            Some(e) => e,
         };
 
         let keycode_up = match event {
             InputEvent::KeyboardUpEvent(keycode) => keycode,
             _ => {
-                return Ok(Some(event));
+                return Ok(());
             }
         };
         if keycode_up.is_modifier() {
-            return Ok(Some(event));
+            return Ok(());
         }
 
         for (call_method, func) in self.funcs.iter() {
@@ -85,26 +93,10 @@ impl IDispatcher for Script {
                 // Running the hotkey func!
                 // TODO: ignoring the result. Should be fine. Think about it.
                 let _ = func.exec(&self);
-                return Ok(Some(event));
+                return Ok(());
             }
         }
 
-        Ok(Some(event))
-    }
-}
-
-impl Script {
-    pub fn new(funcs: HashMap<CallingMethod, Function>) -> anyhow::Result<Self> {
-        let manager = InputManager::new()?;
-        let typer = InputTyper::new()?;
-        Ok(Self {
-            funcs: funcs,
-            manager: manager,
-            typer: typer,
-        })
-    }
-
-    pub fn get_pressed_modifiers(&self) -> HashSet<Modifiers> {
-        self.manager().modifiers().get_pressed()
+        Ok(())
     }
 }

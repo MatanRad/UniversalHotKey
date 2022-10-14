@@ -3,15 +3,20 @@ use std::collections::HashSet;
 use anyhow::Result;
 use config::UHKConfig;
 use uhk_input::events::InputEvent;
-use uhk_input::input::IDispatcher;
+use uhk_input::input::{IDispatcher, InputManager};
 use uhk_input::modifiers::Modifiers;
+use uhk_input::typer::InputTyper;
 use uhk_scripting::parsing::parse;
 use uhk_scripting::script::Script;
 
 // mod test_script;
 mod config;
 
-fn load_scripts(conf: &UHKConfig) -> Vec<Script> {
+fn load_scripts<'a>(
+    conf: &UHKConfig,
+    manager: &'a InputManager,
+    typer: &'a InputTyper,
+) -> Vec<Script<'a>> {
     let mut scripts = vec![];
 
     for path in conf.scripts.iter() {
@@ -36,7 +41,7 @@ fn load_scripts(conf: &UHKConfig) -> Vec<Script> {
                 continue;
             }
             Ok(s) => {
-                scripts.push(s);
+                scripts.push(s.build(manager, typer));
             }
         };
     }
@@ -75,7 +80,10 @@ fn inner_main() -> Result<()> {
         Ok(conf) => conf,
     };
 
-    let mut scripts = load_scripts(&config);
+    let mut manager = InputManager::new()?;
+    let typer = InputTyper::new()?;
+
+    let mut scripts = load_scripts(&config, &manager, &typer);
 
     if scripts.len() == 0 {
         return Err(anyhow::anyhow!(
@@ -84,10 +92,12 @@ fn inner_main() -> Result<()> {
     }
 
     loop {
+        let event = manager.dispatch();
+
         // TODO: Allow scripts to exit?
         for script in scripts.iter_mut() {
-            let event_res = script.dispatch();
-            let event_opt = match event_res {
+            let event_res = script.dispatch(&event, manager.modifiers());
+            match event_res {
                 Ok(opt) => opt,
                 Err(_) => {
                     // Ret value is ignored, We don't care about any events that may have popped up.
@@ -95,9 +105,9 @@ fn inner_main() -> Result<()> {
                     continue;
                 }
             };
-
-            pretty_print_event(event_opt, script.get_pressed_modifiers());
         }
+
+        pretty_print_event(event, manager.modifiers().get_pressed());
     }
 }
 
