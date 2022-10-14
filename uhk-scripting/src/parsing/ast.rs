@@ -3,7 +3,6 @@ use std::{collections::HashMap, vec};
 
 use crate::block::Block;
 use crate::func::{CallingMethod, Function, IFunction};
-use crate::script::Script;
 use crate::statement::{IStatement, StatementCallInfo};
 use crate::statements;
 
