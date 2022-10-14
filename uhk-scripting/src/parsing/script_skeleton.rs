@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use uhk_input::{input::InputManager, typer::InputTyper};
+use uhk_input::typer::InputTyper;
 
 use crate::{
     func::{CallingMethod, Function},
@@ -12,7 +12,7 @@ pub struct ScriptSkeleton {
 }
 
 impl ScriptSkeleton {
-    pub fn build<'a>(self, manager: &'a InputManager, typer: &'a InputTyper) -> Script<'a> {
-        Script::new(self.funcs, manager, typer)
+    pub fn build<'a>(self, typer: &'a InputTyper) -> Script<'a> {
+        Script::new(self.funcs, typer)
     }
 }

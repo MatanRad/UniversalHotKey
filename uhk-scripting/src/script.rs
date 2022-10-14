@@ -1,5 +1,5 @@
 use uhk_input::events::InputEvent;
-use uhk_input::input::InputManager;
+use uhk_input::modifiers::ModifiersState;
 use uhk_input::typer::InputTyper;
 
 use crate::execution::ExecResult;
@@ -11,7 +11,6 @@ use std::collections::HashMap;
 pub(crate) trait IScript {
     fn functions(&self) -> &HashMap<CallingMethod, Function>;
     fn call_func(&self, call_method: &CallingMethod) -> ExecResult;
-    fn manager(&self) -> &InputManager;
     fn typer(&self) -> &InputTyper;
 }
 
@@ -39,26 +38,21 @@ impl<'a> IScript for Script<'a> {
     fn typer(&self) -> &InputTyper {
         &self.typer
     }
-
-    fn manager(&self) -> &InputManager {
-        &self.manager
-    }
 }
 
 impl<'a> Script<'a> {
-    pub fn new(
-        funcs: HashMap<CallingMethod, Function>,
-        manager: &'a InputManager,
-        typer: &'a InputTyper,
-    ) -> Self {
+    pub fn new(funcs: HashMap<CallingMethod, Function>, typer: &'a InputTyper) -> Self {
         Self {
             funcs: funcs,
-            manager: manager,
             typer: typer,
         }
     }
 
-    pub fn dispatch(&mut self, event: &Option<InputEvent>) -> anyhow::Result<()> {
+    pub fn dispatch(
+        &mut self,
+        event: &Option<InputEvent>,
+        modifier_state: &ModifiersState,
+    ) -> anyhow::Result<()> {
         let event = match event {
             None => {
                 return Ok(());
@@ -88,7 +82,7 @@ impl<'a> Script<'a> {
                 return Err(anyhow::anyhow!("[SCRIPT DISPATCH] How did you get here? Hotkeys with more than 1 non-modifier keys aren't supported. (keys: {:?}", keycodes.hashset()));
             }
 
-            let pressed_mods = self.manager.modifiers().get_pressed();
+            let pressed_mods = modifier_state.get_pressed();
             if keycodes.hashset().contains(&keycode_up) && pressed_mods == *modifiers.hashset() {
                 // Running the hotkey func!
                 // TODO: ignoring the result. Should be fine. Think about it.
