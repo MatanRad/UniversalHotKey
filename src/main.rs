@@ -12,11 +12,7 @@ use uhk_scripting::script::Script;
 // mod test_script;
 mod config;
 
-fn load_scripts<'a>(
-    conf: &UHKConfig,
-    manager: &'a InputManager,
-    typer: &'a InputTyper,
-) -> Vec<Script<'a>> {
+fn load_scripts<'a>(conf: &UHKConfig, typer: &'a InputTyper) -> Vec<Script<'a>> {
     let mut scripts = vec![];
 
     for path in conf.scripts.iter() {
@@ -41,7 +37,7 @@ fn load_scripts<'a>(
                 continue;
             }
             Ok(s) => {
-                scripts.push(s.build(manager, typer));
+                scripts.push(s.build(typer));
             }
         };
     }
@@ -83,7 +79,7 @@ fn inner_main() -> Result<()> {
     let mut manager = InputManager::new()?;
     let typer = InputTyper::new()?;
 
-    let mut scripts = load_scripts(&config, &manager, &typer);
+    let mut scripts = load_scripts(&config, &typer);
 
     if scripts.len() == 0 {
         return Err(anyhow::anyhow!(
@@ -92,7 +88,7 @@ fn inner_main() -> Result<()> {
     }
 
     loop {
-        let event = manager.dispatch();
+        let event = manager.dispatch().unwrap();
 
         // TODO: Allow scripts to exit?
         for script in scripts.iter_mut() {
