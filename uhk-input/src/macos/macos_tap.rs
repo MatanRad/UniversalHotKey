@@ -1,8 +1,8 @@
 use anyhow::Result;
 use core_foundation::runloop::CFRunLoopMode;
 
-use crate::events::InputEvent;
 use crate::keycode::KeyCode;
+use crate::{events::InputEvent, modifiers::Modifiers};
 use std::{
     marker::PhantomData,
     sync::{Arc, Mutex},
@@ -10,15 +10,59 @@ use std::{
 };
 
 use core_graphics::event::{
-    CGEvent, CGEventTap, CGEventTapLocation, CGEventTapOptions, CGEventTapPlacement, CGEventType,
+    CGEvent, CGEventFlags, CGEventTap, CGEventTapLocation, CGEventTapOptions, CGEventTapPlacement,
+    CGEventType,
 };
 
 const CG_FIELD_KEYBOARD_EVENT_KEYCODE: u32 = 9;
 
-pub struct MacOSTap<'a> {
+pub struct MacOSTap {
     pub events: Arc<Mutex<Vec<InputEvent>>>,
     pub handle: JoinHandle<()>,
-    _phony: PhantomData<&'a ()>,
+}
+
+fn event_by_flag_bit(flags: &CGEventFlags, bit: CGEventFlags, keycode: KeyCode) -> InputEvent {
+    if flags.contains(bit) {
+        return InputEvent::KeyboardDownEvent(KeyCode::from(keycode));
+    }
+    return InputEvent::KeyboardUpEvent(KeyCode::from(keycode));
+}
+
+fn cgevent_to_events(ev: &CGEvent) -> Result<Vec<InputEvent>> {
+    let kc = ev.get_integer_value_field(CG_FIELD_KEYBOARD_EVENT_KEYCODE);
+    let mut events = vec![];
+
+    let main_ev = match ev.get_type() {
+        CGEventType::KeyDown => InputEvent::KeyboardDownEvent(KeyCode::from(kc)),
+        CGEventType::KeyUp => InputEvent::KeyboardUpEvent(KeyCode::from(kc)),
+        _ => return Err(anyhow::anyhow!("Cannot convert event to InputEvent!")),
+    };
+
+    let flags = ev.get_flags();
+    events.push(event_by_flag_bit(
+        &flags,
+        CGEventFlags::CGEventFlagCommand,
+        KeyCode::LEFTMETA,
+    ));
+    events.push(event_by_flag_bit(
+        &flags,
+        CGEventFlags::CGEventFlagControl,
+        KeyCode::LEFTCTRL,
+    ));
+    events.push(event_by_flag_bit(
+        &flags,
+        CGEventFlags::CGEventFlagAlternate,
+        KeyCode::LEFTALT,
+    ));
+    events.push(event_by_flag_bit(
+        &flags,
+        CGEventFlags::CGEventFlagShift,
+        KeyCode::LEFTSHIFT,
+    ));
+
+    events.push(main_ev);
+
+    Ok(events)
 }
 
 impl TryInto<InputEvent> for CGEvent {
@@ -39,7 +83,7 @@ impl TryInto<InputEvent> for CGEvent {
     }
 }
 
-impl<'a> MacOSTap<'a> {
+impl MacOSTap {
     pub fn new() -> Result<Self> {
         let data = Arc::new(Mutex::new(vec![]));
         let cloned = data.clone();
@@ -49,13 +93,12 @@ impl<'a> MacOSTap<'a> {
                 CGEventTapPlacement::HeadInsertEventTap,
                 CGEventTapOptions::ListenOnly, // TODO We can be active ;)
                 vec![CGEventType::KeyDown, CGEventType::KeyUp],
-                |a, b, c| {
-                    match c.clone().try_into() {
-                        Ok(i) => {
-                            let mut sdata = cloned.lock().unwrap();
-                            (*sdata).push(i);
-                        }
-                        _ => {}
+                |_, _, c| {
+                    let found_events = cgevent_to_events(c);
+
+                    if found_events.is_ok() {
+                        let mut sdata = cloned.lock().unwrap();
+                        (*sdata).append(&mut (found_events.unwrap()));
                     }
 
                     return Some(c.clone());
@@ -81,7 +124,6 @@ impl<'a> MacOSTap<'a> {
         Ok(Self {
             handle: handle,
             events: data,
-            _phony: PhantomData,
         })
     }
 }
