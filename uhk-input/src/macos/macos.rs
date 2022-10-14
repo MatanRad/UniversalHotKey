@@ -10,7 +10,7 @@ use self::macos_keycode::MacOSKeycode;
 use self::macos_tap::MacOSTap;
 use self::macos_typer::MacOSTyper;
 
-impl<'a> IDispatcher for MacOSTap<'a> {
+impl IDispatcher for MacOSTap {
     fn dispatch(&mut self) -> Result<Option<InputEvent>> {
         let mut events = self.events.lock().unwrap();
         if events.len() == 0 {
@@ -21,6 +21,6 @@ impl<'a> IDispatcher for MacOSTap<'a> {
     }
 }
 
-pub type OsDispatcher<'a> = MacOSTap<'a>;
+pub type OsDispatcher = MacOSTap;
 pub type OsTyper = MacOSTyper;
 pub type OsKeycode = MacOSKeycode;
