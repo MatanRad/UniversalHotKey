@@ -1,4 +1,5 @@
 mod linux_event;
+mod linux_keycode;
 mod linux_typer;
 
 use anyhow::Result;
@@ -6,6 +7,7 @@ use anyhow::Result;
 use crate::events::InputEvent;
 use crate::input::IDispatcher;
 use crate::os::os_impl::linux_event::KeyEventValue;
+use crate::os::os_impl::linux_keycode::LinuxKeyCode;
 use byteorder::{LittleEndian, ReadBytesExt};
 use linux_event::LinuxInputEvent;
 use linux_typer::LinuxTyper;
@@ -19,6 +21,7 @@ pub struct LinuxDispatcher {
 
 pub type OsDispatcher = LinuxDispatcher;
 pub type OsTyper = LinuxTyper;
+pub type OsKeycode = LinuxKeyCode;
 
 impl IDispatcher for LinuxDispatcher {
     fn dispatch(&mut self) -> Result<Option<InputEvent>> {

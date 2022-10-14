@@ -1,19 +1,24 @@
 use anyhow::Result;
-use core_foundation::mach_port::CFMachPort;
+use core_foundation::runloop::CFRunLoopMode;
 
 use crate::events::InputEvent;
 use crate::keycode::KeyCode;
+use std::{
+    marker::PhantomData,
+    sync::{Arc, Mutex},
+    thread::{self, JoinHandle},
+};
 
 use core_graphics::event::{
-    CGEvent, CGEventMask, CGEventTap, CGEventTapLocation, CGEventTapOptions, CGEventTapPlacement,
-    CGEventType,
+    CGEvent, CGEventTap, CGEventTapLocation, CGEventTapOptions, CGEventTapPlacement, CGEventType,
 };
 
 const CG_FIELD_KEYBOARD_EVENT_KEYCODE: u32 = 9;
 
 pub struct MacOSTap<'a> {
-    tap: CGEventTap<'a>,
-    pub events: Vec<InputEvent>,
+    pub events: Arc<Mutex<Vec<InputEvent>>>,
+    pub handle: JoinHandle<()>,
+    _phony: PhantomData<&'a ()>,
 }
 
 impl TryInto<InputEvent> for CGEvent {
@@ -23,11 +28,11 @@ impl TryInto<InputEvent> for CGEvent {
         match self.get_type() {
             CGEventType::KeyDown => {
                 // TODO: KC
-                Ok(InputEvent::KeyboardDownEvent(KeyCode::UNKNOWN))
+                Ok(InputEvent::KeyboardDownEvent(KeyCode::from(kc)))
             }
             CGEventType::KeyUp => {
                 // TODO: KC
-                Ok(InputEvent::KeyboardUpEvent(KeyCode::UNKNOWN))
+                Ok(InputEvent::KeyboardUpEvent(KeyCode::from(kc)))
             }
             _ => Err(anyhow::anyhow!("Cannot convert event to InputEvent!")),
         }
@@ -36,29 +41,47 @@ impl TryInto<InputEvent> for CGEvent {
 
 impl<'a> MacOSTap<'a> {
     pub fn new() -> Result<Self> {
-        let events = vec![];
+        let data = Arc::new(Mutex::new(vec![]));
+        let cloned = data.clone();
+        let handle = thread::spawn(move || {
+            let tap = CGEventTap::new(
+                CGEventTapLocation::Session,
+                CGEventTapPlacement::HeadInsertEventTap,
+                CGEventTapOptions::ListenOnly, // TODO We can be active ;)
+                vec![CGEventType::KeyDown, CGEventType::KeyUp],
+                |a, b, c| {
+                    match c.clone().try_into() {
+                        Ok(i) => {
+                            let mut sdata = cloned.lock().unwrap();
+                            (*sdata).push(i);
+                        }
+                        _ => {}
+                    }
 
-        let tap = match CGEventTap::new(
-            CGEventTapLocation::Session,
-            CGEventTapPlacement::HeadInsertEventTap,
-            CGEventTapOptions::ListenOnly, // TODO We can be active ;)
-            vec![CGEventType::KeyDown, CGEventType::KeyUp.into()],
-            |a, b, c| {
-                match c.clone().try_into() {
-                    Ok(i) => events.push(i),
-                    _ => {}
-                }
+                    return Some(c.clone());
+                },
+            )
+            .unwrap();
 
-                return Some(c.clone());
-            },
-        ) {
-            Ok(t) => t,
-            Err(_) => return Err(anyhow::anyhow!("Couldn't Create Event Tap!")),
-        };
+            unsafe {
+                let loop_source: core_foundation::runloop::CFRunLoopSource = tap
+                    .mach_port
+                    .create_runloop_source(0)
+                    .expect("Failed creating loop source");
+                let current = core_foundation::runloop::CFRunLoop::get_current();
+                current.add_source(
+                    &loop_source,
+                    core_foundation::runloop::kCFRunLoopCommonModes,
+                );
+                tap.enable();
+                core_foundation::runloop::CFRunLoop::run_current();
+            }
+        });
 
         Ok(Self {
-            tap: tap,
-            events: events,
+            handle: handle,
+            events: data,
+            _phony: PhantomData,
         })
     }
 }
