@@ -14,6 +14,7 @@ use uhk_input::keycode::KeyCode;
 use uhk_input::modifiers::Modifiers;
 use uhk_input::utils::HashableHashSet;
 
+use super::script_skeleton::ScriptSkeleton;
 use super::IParseable;
 
 #[derive(Parser)]
@@ -222,7 +223,7 @@ pub fn build_generic_func(pair: Pair<Rule>) -> Result<Function> {
     Ok(Function::new(calling_method, vec![block]))
 }
 
-pub fn parse(source: &str) -> Result<Script> {
+pub fn parse(source: &str) -> Result<ScriptSkeleton> {
     let mut funcs = HashMap::new();
 
     let mut root_pairs = UHKParser::parse(Rule::program, source)?;
@@ -260,5 +261,5 @@ pub fn parse(source: &str) -> Result<Script> {
         funcs.insert(func.calling_method().clone(), func);
     }
 
-    Ok(Script::new(funcs)?)
+    Ok(ScriptSkeleton { funcs: funcs })
 }
