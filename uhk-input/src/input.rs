@@ -18,8 +18,8 @@ impl IDispatcher for InputManager {
 
         if let Some(i) = ev {
             match i {
-                InputEvent::KeyboardUpEvent(code) => self.modifier_states.key_up(code),
-                InputEvent::KeyboardDownEvent(code) => self.modifier_states.key_down(code),
+                InputEvent::KeyboardUpEvent(code) => self.modifier_states.key_up(&code),
+                InputEvent::KeyboardDownEvent(code) => self.modifier_states.key_down(&code),
                 _ => {}
             }
         }
