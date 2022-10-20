@@ -17,6 +17,7 @@ use std::io::Read; // 1.2.7
 pub struct LinuxDispatcher {
     device: fs::File,
     kb_buf: Vec<u8>,
+    listening: bool,
 }
 
 pub type OsDispatcher = LinuxDispatcher;
@@ -25,7 +26,18 @@ pub type OsKeycode = LinuxKeyCode;
 
 impl IDispatcher for LinuxDispatcher {
     fn dispatch(&mut self) -> Result<Option<InputEvent>> {
-        self.dispatch_keyboard()
+        // Consume event.
+        let res = self.dispatch_keyboard()?;
+
+        if !self.listening {
+            return Ok(None);
+        }
+
+        Ok(res)
+    }
+
+    fn set_listening(&mut self, listening: bool) {
+        self.listening = listening;
     }
 }
 
@@ -42,6 +54,7 @@ impl LinuxDispatcher {
         Ok(Self {
             device: file,
             kb_buf: Vec::new(),
+            listening: true,
         })
     }
 
