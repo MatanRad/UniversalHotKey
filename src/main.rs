@@ -16,7 +16,7 @@ fn load_scripts<'a>(conf: &UHKConfig, typer: &'a InputTyper) -> Vec<Script<'a>> 
     let mut scripts = vec![];
 
     for path in conf.scripts.iter() {
-        let source = match std::fs::read_to_string("script.uhk") {
+        let source = match std::fs::read_to_string(path) {
             Err(e) => {
                 eprintln!(
                     "[SCRIPT LOADER] Couldn't find script ({}). Err: {}",
