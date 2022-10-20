@@ -1,5 +1,6 @@
 use crate::{parsing::Rule, script::Script};
 use pest::iterators::Pair;
+use uhk_input::input::InputManager;
 
 use crate::{
     execution::{ExecResult, IExecutable},
@@ -25,7 +26,7 @@ impl IStatement for ReturnStatement {
 }
 
 impl IExecutable for ReturnStatement {
-    fn exec(&self, _script: &Script) -> ExecResult {
+    fn exec(&self, _script: &Script, _: &mut InputManager) -> ExecResult {
         ExecResult::SuccessReturn
     }
 }

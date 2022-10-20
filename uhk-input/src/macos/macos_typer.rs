@@ -9,6 +9,8 @@ pub struct MacOSTyper {
     mod_states: std::cell::RefCell<ModifiersState>,
 }
 
+const SLEEP_DURATION: std::time::Duration = std::time::Duration::from_millis(10);
+
 impl ITyper for MacOSTyper {
     fn key_down(&self, keycode: &crate::keycode::KeyCode) -> Result<()> {
         self.key_set(keycode, true)
@@ -21,12 +23,8 @@ impl ITyper for MacOSTyper {
             self.mod_states.borrow_mut().key_up(keycode);
         }
 
-        if keycode.is_modifier() {
-            return Ok(());
-        }
-
         let source = match CGEventSource::new(
-            core_graphics::event_source::CGEventSourceStateID::CombinedSessionState,
+            core_graphics::event_source::CGEventSourceStateID::HIDSystemState,
         ) {
             Ok(s) => s,
             Err(e) => return Err(anyhow!("[key_set] error creating event source: {:?}", e)),
@@ -40,25 +38,26 @@ impl ITyper for MacOSTyper {
         let mut flags: CGEventFlags = CGEventFlags::empty();
 
         let state = &self.mod_states.borrow().state;
-        if state.contains_key(&Modifiers::LCtrl) || state.contains_key(&Modifiers::RCtrl) {
+        if state[&Modifiers::LCtrl] || state[&Modifiers::RCtrl] {
             flags.insert(CGEventFlags::CGEventFlagControl);
         }
 
-        if state.contains_key(&Modifiers::LShift) || state.contains_key(&Modifiers::RShift) {
+        if state[&Modifiers::LShift] || state[&Modifiers::RShift] {
             flags.insert(CGEventFlags::CGEventFlagShift);
         }
 
-        if state.contains_key(&Modifiers::LAlt) || state.contains_key(&Modifiers::RAlt) {
+        if state[&Modifiers::LAlt] || state[&Modifiers::RAlt] {
             flags.insert(CGEventFlags::CGEventFlagShift);
         }
 
-        if state.contains_key(&Modifiers::Winkey) {
+        if state[&Modifiers::Winkey] {
             flags.insert(CGEventFlags::CGEventFlagCommand);
         }
 
         event.set_flags(flags);
 
-        event.post(core_graphics::event::CGEventTapLocation::Session);
+        event.post(core_graphics::event::CGEventTapLocation::HID);
+        std::thread::sleep(SLEEP_DURATION);
 
         Ok(())
     }

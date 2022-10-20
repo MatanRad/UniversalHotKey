@@ -92,7 +92,7 @@ fn inner_main() -> Result<()> {
 
         // TODO: Allow scripts to exit?
         for script in scripts.iter_mut() {
-            let event_res = script.dispatch(&event, manager.modifiers());
+            let event_res = script.dispatch(&event, &mut manager);
             match event_res {
                 Ok(opt) => opt,
                 Err(_) => {

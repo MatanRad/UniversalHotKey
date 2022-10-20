@@ -4,6 +4,7 @@ use crate::{
     script::{IScript, Script},
 };
 use pest::iterators::Pair;
+use uhk_input::input::InputManager;
 
 use crate::{
     execution::{ExecResult, IExecutable},
@@ -31,8 +32,8 @@ impl IStatement for CallStatement {
 }
 
 impl IExecutable for CallStatement {
-    fn exec(&self, script: &Script) -> ExecResult {
-        let res = script.call_func(&self.calling_method);
+    fn exec(&self, script: &Script, manager: &mut InputManager) -> ExecResult {
+        let res = script.call_func(&self.calling_method, manager);
 
         if res == ExecResult::SuccessReturn {
             return ExecResult::SuccessNext;

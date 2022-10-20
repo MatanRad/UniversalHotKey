@@ -1,3 +1,5 @@
+use uhk_input::input::InputManager;
+
 use crate::script::Script;
 
 #[derive(PartialEq)]
@@ -34,5 +36,5 @@ impl ExecResult {
 }
 
 pub trait IExecutable {
-    fn exec(&self, script: &Script) -> ExecResult;
+    fn exec(&self, script: &Script, manager: &mut InputManager) -> ExecResult;
 }

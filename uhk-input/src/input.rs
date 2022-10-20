@@ -5,6 +5,7 @@ use crate::os::OsDispatcher;
 
 pub trait IDispatcher {
     fn dispatch(&mut self) -> Result<Option<InputEvent>>;
+    fn set_listening(&mut self, listening: bool);
 }
 
 pub struct InputManager {
@@ -25,6 +26,10 @@ impl IDispatcher for InputManager {
         }
 
         Ok(ev)
+    }
+
+    fn set_listening(&mut self, listening: bool) {
+        self.os_dispatcher.set_listening(listening)
     }
 }
 
