@@ -1,10 +1,8 @@
 use anyhow::Result;
-use core_foundation::runloop::CFRunLoopMode;
 
+use crate::events::InputEvent;
 use crate::keycode::KeyCode;
-use crate::{events::InputEvent, modifiers::Modifiers};
 use std::{
-    marker::PhantomData,
     sync::{Arc, Mutex},
     thread::{self, JoinHandle},
 };

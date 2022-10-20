@@ -86,7 +86,7 @@ impl From<&KeyCode> for Modifiers {
 }
 
 impl ModifiersState {
-    pub fn key_up(&mut self, code: KeyCode) {
+    pub fn key_up(&mut self, code: &KeyCode) {
         let key: Modifiers = code.into();
 
         if key == Modifiers::Unknown {
@@ -99,7 +99,7 @@ impl ModifiersState {
             .or_insert(false);
     }
 
-    pub fn key_down(&mut self, code: KeyCode) {
+    pub fn key_down(&mut self, code: &KeyCode) {
         let key: Modifiers = code.into();
 
         if key == Modifiers::Unknown {
