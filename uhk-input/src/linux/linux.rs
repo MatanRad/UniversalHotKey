@@ -43,9 +43,30 @@ impl IDispatcher for LinuxDispatcher {
 
 impl LinuxDispatcher {
     pub fn new() -> Result<Self> {
-        // TODO: Change this
-        let path =
-            "/dev/input/by-id/usb-Razer_Razer_BlackWidow_Chroma_V2-if01-event-kbd".to_string();
+        // TODO: This captures the last pci device that has 'event-kbd' in it.
+        //       this probably won't work on every machine. Whatever lol.
+
+        let mut pci_name = String::new();
+        let mut found_one: bool = false;
+        for dir in std::fs::read_dir("/dev/input/by-path")? {
+            let entry = dir?;
+            let name = match entry.file_name().to_str() {
+                None => continue,
+                Some(i) => i.to_string(),
+            };
+
+            if name.contains("event-kbd") {
+                pci_name = name;
+                found_one = true;
+            }
+        }
+
+        if !found_one {
+            return Err(anyhow::anyhow!("Couldn't find any keyboard device!"));
+        }
+
+        let path = format!("/dev/input/by-path/{}", pci_name);
+        println!("[Manager] Initializing with device: '{}'.", path);
         Self::new_with_device_path(&path)
     }
 
