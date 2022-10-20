@@ -12,12 +12,16 @@ use self::macos_typer::MacOSTyper;
 
 impl IDispatcher for MacOSTap {
     fn dispatch(&mut self) -> Result<Option<InputEvent>> {
-        let mut events = self.events.lock().unwrap();
-        if events.len() == 0 {
+        let data = &mut self.data.lock().unwrap();
+        if data.events.len() == 0 {
             return Ok(None);
         }
 
-        return Ok(Some(events.remove(0).clone()));
+        return Ok(Some(data.events.remove(0).clone()));
+    }
+
+    fn set_listening(&mut self, listening: bool) {
+        self.data.lock().unwrap().should_log = listening;
     }
 }
 

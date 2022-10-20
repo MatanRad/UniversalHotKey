@@ -1,5 +1,5 @@
 use uhk_input::events::InputEvent;
-use uhk_input::modifiers::ModifiersState;
+use uhk_input::input::InputManager;
 use uhk_input::typer::InputTyper;
 
 use crate::execution::ExecResult;
@@ -10,7 +10,7 @@ use std::collections::HashMap;
 
 pub(crate) trait IScript {
     fn functions(&self) -> &HashMap<CallingMethod, Function>;
-    fn call_func(&self, call_method: &CallingMethod) -> ExecResult;
+    fn call_func(&self, call_method: &CallingMethod, manager: &mut InputManager) -> ExecResult;
     fn typer(&self) -> &InputTyper;
 }
 
@@ -24,10 +24,10 @@ impl<'a> IScript for Script<'a> {
         &self.funcs
     }
 
-    fn call_func(&self, call_method: &CallingMethod) -> ExecResult {
+    fn call_func(&self, call_method: &CallingMethod, manager: &mut InputManager) -> ExecResult {
         for (method, func) in self.funcs.iter() {
             if method == call_method {
-                return func.exec(self);
+                return func.exec(self, manager);
             }
         }
 
@@ -51,7 +51,7 @@ impl<'a> Script<'a> {
     pub fn dispatch(
         &mut self,
         event: &Option<InputEvent>,
-        modifier_state: &ModifiersState,
+        manager: &mut InputManager,
     ) -> anyhow::Result<()> {
         let event = match event {
             None => {
@@ -82,11 +82,11 @@ impl<'a> Script<'a> {
                 return Err(anyhow::anyhow!("[SCRIPT DISPATCH] How did you get here? Hotkeys with more than 1 non-modifier keys aren't supported. (keys: {:?}", keycodes.hashset()));
             }
 
-            let pressed_mods = modifier_state.get_pressed();
+            let pressed_mods = manager.modifiers().get_pressed();
             if keycodes.hashset().contains(&keycode_up) && pressed_mods == *modifiers.hashset() {
                 // Running the hotkey func!
                 // TODO: ignoring the result. Should be fine. Think about it.
-                let _ = func.exec(&self);
+                let _ = func.exec(&self, manager);
                 return Ok(());
             }
         }

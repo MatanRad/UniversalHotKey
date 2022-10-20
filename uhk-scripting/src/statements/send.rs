@@ -6,7 +6,12 @@ use crate::{
     script::{IScript, Script},
 };
 use pest::iterators::Pair;
-use uhk_input::{keycode::KeyCode, modifiers::Modifiers, utils::HashableHashSet};
+use uhk_input::{
+    input::{IDispatcher, InputManager},
+    keycode::KeyCode,
+    modifiers::Modifiers,
+    utils::HashableHashSet,
+};
 
 use crate::{
     execution::{ExecResult, IExecutable},
@@ -40,7 +45,9 @@ impl IStatement for SendStatement {
 }
 
 impl IExecutable for SendStatement {
-    fn exec(&self, script: &Script) -> ExecResult {
+    fn exec(&self, script: &Script, manager: &mut InputManager) -> ExecResult {
+        manager.set_listening(false);
+
         let typer = script.typer();
         let res = match &self.method {
             SendMethod::Hotkey(modifiers, keys) => {
@@ -55,6 +62,8 @@ impl IExecutable for SendStatement {
                 }
             }
         };
+
+        manager.set_listening(true);
 
         match res {
             Err(e) => ExecResult::FailProgram(format!("[SEND FAIL] {}", e)),

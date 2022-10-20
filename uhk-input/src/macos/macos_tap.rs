@@ -14,8 +14,13 @@ use core_graphics::event::{
 
 const CG_FIELD_KEYBOARD_EVENT_KEYCODE: u32 = 9;
 
+pub(crate) struct TapData {
+    pub events: Vec<InputEvent>,
+    pub should_log: bool,
+}
+
 pub struct MacOSTap {
-    pub events: Arc<Mutex<Vec<InputEvent>>>,
+    pub(crate) data: Arc<Mutex<TapData>>,
     pub handle: JoinHandle<()>,
 }
 
@@ -83,7 +88,10 @@ impl TryInto<InputEvent> for CGEvent {
 
 impl MacOSTap {
     pub fn new() -> Result<Self> {
-        let data = Arc::new(Mutex::new(vec![]));
+        let data = Arc::new(Mutex::new(TapData {
+            events: vec![],
+            should_log: true,
+        }));
         let cloned = data.clone();
         let handle = thread::spawn(move || {
             let tap = CGEventTap::new(
@@ -96,7 +104,9 @@ impl MacOSTap {
 
                     if found_events.is_ok() {
                         let mut sdata = cloned.lock().unwrap();
-                        (*sdata).append(&mut (found_events.unwrap()));
+                        if (*sdata).should_log {
+                            (*sdata).events.append(&mut (found_events.unwrap()));
+                        }
                     }
 
                     return Some(c.clone());
@@ -121,7 +131,7 @@ impl MacOSTap {
 
         Ok(Self {
             handle: handle,
-            events: data,
+            data: data,
         })
     }
 }

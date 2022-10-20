@@ -1,5 +1,6 @@
 use crate::{parsing::Rule, script::Script};
 use pest::iterators::Pair;
+use uhk_input::input::InputManager;
 
 use crate::{
     execution::{ExecResult, IExecutable},
@@ -26,7 +27,7 @@ impl IStatement for LogStatement {
 }
 
 impl IExecutable for LogStatement {
-    fn exec(&self, _script: &Script) -> ExecResult {
+    fn exec(&self, _script: &Script, _: &mut InputManager) -> ExecResult {
         println!("{}", self.text);
         ExecResult::SuccessNext
     }
