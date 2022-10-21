@@ -85,3 +85,5 @@ export UHK_DEVICE=/dev/input/by-id/usb-Razer_Razer_BlackWidow_Chroma_V2-if01-eve
 Install using the same method as for Linux (i.e. wrapper script + `launchctl`).
 
 The MacOS version of UHK doesn't use X11 nor does it read inputs from `/dev`. It uses Apple's Core Graphics framework to receive and send keypresses.
+UHK needs accessibility permissions in order to read keyboard input and simulate keyboard presses.
+On the first execution, your Mac will notify you of this and will instruct you to either permit it or disallow it. At that point you can allow it via the system preferences.
