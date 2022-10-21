@@ -47,11 +47,11 @@ rick_roll {
 
 ^#r::
     Call rick_roll
-	return
+    return
 
 ^+m::
     Send example@email.com
-	return
+    return
 ```
 
 ## Installation
