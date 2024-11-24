@@ -12,6 +12,9 @@ use self::macos_typer::MacOSTyper;
 
 impl IDispatcher for MacOSTap {
     fn dispatch(&mut self) -> Result<Option<InputEvent>> {
+        // TODO: replace this with real synchronization.
+        std::thread::sleep(std::time::Duration::from_millis(20));
+
         let data = &mut self.data.lock().unwrap();
         if data.events.len() == 0 {
             return Ok(None);
